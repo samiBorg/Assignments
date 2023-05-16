@@ -1,6 +1,10 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import Optional, List
+import asyncio
+import aioredis
+from fastapi import FastAPI
+
 
 class Todo(BaseModel):
 
@@ -10,8 +14,15 @@ class Todo(BaseModel):
 
 app = FastAPI(title="Todo API")
 
+redis_pool = None
+
 
 store_todo = []
+
+@app.on_event("startup")
+async def startup_event():
+    global redis_pool
+    redis_pool = await aioredis.create_pool("redis://localhost")
 
 @app.get('/')
 async def home():
